@@ -7,12 +7,10 @@ import matplotlib.pyplot as plt
 from matplotlib.mlab import psd
 from sklearn import svm
 
-def psdCalc(_channel, _win_size, _start_samp, _samp_rate, accumPSDPower, accumPSDFreq):
-    end_samp = _start_samp + _win_size
+def psdCalc(_channel, _start_samp, _end_samp, _samp_rate, accumPSDPower, accumPSDFreq):
+    x = _channel[_start_samp : _end_samp]
 
-    x = _channel[_start_samp : end_samp]
-
-    power, freq = psd(x, NFFT = _win_size, Fs = _samp_rate)   
+    power, freq = psd(x, NFFT = (_end_samp - _start_samp), Fs = _samp_rate)   
 
     start_index = np.where(freq >= 4.0)[0][0]
     end_index = np.where(freq >= 60.0)[0][0]
@@ -50,16 +48,18 @@ for i in range(0, samps):
                 mark_count += 1
             training_samples[int(condition_id)].append([iniSamp, i])
 
-print(training_samples)
+#print(training_samples)
 
 accumPSDPowerChan1 = []
 accumPSDFreq = []
 
 for mark in training_samples:
     for window in training_samples[mark]:
-        psdCalc(chann1, 256, window[0], samp_rate, accumPSDPowerChan1, accumPSDFreq)
+        print(window)
+        psdCalc(chann1, window[0], window[1], samp_rate, accumPSDPowerChan1, accumPSDFreq)
+        print(len(accumPSDPowerChan1[0]))
+        exit()
 
-print(accumPSDPowerChan1[0])
 
 '''
 # Train SVM classifier with all the available observations
