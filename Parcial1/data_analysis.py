@@ -112,7 +112,7 @@ def graphsAccum(_training_samples, _channel1, _channel2, _time, _samp_rate, _mar
     plt.show()
 
 # Read data file
-data = np.loadtxt("Abierto, cerrado, descanso.txt") 
+data = np.loadtxt("../Abierto, cerrado, descanso.txt") 
 samp_rate = 256
 samps = data.shape[0]
 n_channels = data.shape[1]
