@@ -14,6 +14,7 @@ from sklearn import preprocessing
 
 
 def psdCalc(_channel, _win_size, _start_samp, _samp_rate, accumPSDPower, _posturas, _mark):
+    current_samp = _start_samp
     end_samp = _start_samp + _win_size
 
     x = _channel[_start_samp : end_samp]
@@ -62,13 +63,18 @@ for i in range(0, samps):
 
 accumPSDPower = []
 posturas = []
+time_meausred = 256 #256 = 1 sec
 
 for mark in training_samples:
     for window in training_samples[mark]:
-        chan1 = psdCalc(chann1, 1024, window[0], samp_rate, accumPSDPower, posturas, mark) # 256=1 sec
-        chan2 = psdCalc(chann2, 1024, window[0], samp_rate, accumPSDPower, None, None) # 256=1 sec
-        row = np.append(chan1, chan2)
-        accumPSDPower.append(row)
+        current_window = window[0]
+        end_window = window[1]
+        while (current_window + time_meausred) < end_window:
+            current_window = current_window + time_meausred
+            chan1 = psdCalc(chann1, time_meausred, current_window, samp_rate, accumPSDPower, posturas, mark) # 256=1 sec
+            chan2 = psdCalc(chann2, time_meausred, current_window, samp_rate, accumPSDPower, None, None) # 256=1 sec
+            row = np.append(chan1, chan2)
+            accumPSDPower.append(row)
 
 accumPSDPower = np.array(accumPSDPower)
 print(accumPSDPower.shape)
@@ -78,9 +84,8 @@ y = np.array(posturas)
 lab_enc = preprocessing.LabelEncoder()
 y = lab_enc.fit_transform(y)
 
-# 3-fold
-#  cross-validation
-kf = KFold(n_splits=3, shuffle = True)
+# 5-fold cross-validation
+kf = KFold(n_splits=5, shuffle = True)
 clf = svm.SVC(kernel = 'linear')
 
 acc = 0
