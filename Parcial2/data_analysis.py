@@ -3,23 +3,33 @@
 #------------------------------------------------------------------------------------------------------------------
 
 import numpy as np
+#from keras.utils import np_utils
 import matplotlib.pyplot as plt
 from matplotlib.mlab import psd
 from sklearn import svm
+from sklearn.model_selection import KFold
+from sklearn.metrics import confusion_matrix
+from sklearn import preprocessing
 
-def psdCalc(_channel, _start_samp, _end_samp, _samp_rate, accumPSDPower, accumPSDFreq):
-    x = _channel[_start_samp : _end_samp]
 
-    power, freq = psd(x, NFFT = (_end_samp - _start_samp), Fs = _samp_rate)   
+
+def psdCalc(_channel, _win_size, _start_samp, _samp_rate, accumPSDPower, _posturas, _mark):
+    end_samp = _start_samp + _win_size
+
+    x = _channel[_start_samp : end_samp]
+
+    power, freq = psd(x, NFFT = _win_size, Fs = _samp_rate)   
 
     start_index = np.where(freq >= 4.0)[0][0]
     end_index = np.where(freq >= 60.0)[0][0]
 
-    accumPSDPower.append(power[start_index:end_index])
-    accumPSDFreq.append(freq[start_index:end_index])
+    if _mark is not None:
+        _posturas.append(int(mark))
+
+    return power[start_index:end_index]
 
 # Read data file
-data = np.loadtxt("../Abierto, cerrado, descanso.txt") 
+data = np.loadtxt("Abierto - Cerrado - Normal 1.txt") 
 samp_rate = 256
 samps = data.shape[0]
 n_channels = data.shape[1]
@@ -48,26 +58,29 @@ for i in range(0, samps):
                 mark_count += 1
             training_samples[int(condition_id)].append([iniSamp, i])
 
-#print(training_samples)
+#print("Training Samples", training_samples)
 
-accumPSDPowerChan1 = []
-accumPSDFreq = []
+accumPSDPower = []
+posturas = []
 
 for mark in training_samples:
     for window in training_samples[mark]:
-        print(window)
-        psdCalc(chann1, window[0], window[1], samp_rate, accumPSDPowerChan1, accumPSDFreq)
-        print(len(accumPSDPowerChan1[0]))
-        exit()
+        chan1 = psdCalc(chann1, 1024, window[0], samp_rate, accumPSDPower, posturas, mark) # 256=1 sec
+        chan2 = psdCalc(chann2, 1024, window[0], samp_rate, accumPSDPower, None, None) # 256=1 sec
+        row = np.append(chan1, chan2)
+        accumPSDPower.append(row)
 
+accumPSDPower = np.array(accumPSDPower)
+print(accumPSDPower.shape)
 
-'''
-# Train SVM classifier with all the available observations
-clf = svm.SVC(kernel = 'linear')
-clf.fit(x, y)
+x = accumPSDPower
+y = np.array(posturas)
+lab_enc = preprocessing.LabelEncoder()
+y = lab_enc.fit_transform(y)
 
-# 5-fold cross-validation
-kf = KFold(n_splits=10, shuffle = True)
+# 3-fold
+#  cross-validation
+kf = KFold(n_splits=3, shuffle = True)
 clf = svm.SVC(kernel = 'linear')
 
 acc = 0
@@ -84,7 +97,4 @@ for train_index, test_index in kf.split(x):
 
     # Calculate confusion matrix and model performance
     cm = confusion_matrix(y_test, y_pred)
-    acc_i = (cm[0,0]+cm[1,1]+cm[2,2])/len(y_test)    
-
-    acc += acc_i 
-'''
+    print(cm)
