@@ -170,7 +170,6 @@ for train_file, test_file in files:
 mlp = classifiers['Izq_Der_Cerr_Abi_1'].mlp
 encoder = encoders['Izq_Der_Cerr_Abi_1']
 
-
 def clear():
     system('cls')
 
@@ -239,30 +238,30 @@ class TronGameController(TwoPlayersGame):
     
     def make_move(self, direction):
         if self.nplayer == 1:
-            if direction is 1: #Left
+            if direction == 1: #Left
                 self.board[self.positionXP1, self.positionYP1] = 1
                 self.positionYP1 -= 1
-            if direction is 2: #Right
+            if direction == 2: #Right
                 self.board[self.positionXP1, self.positionYP1] = 2
                 self.positionYP1 += 1
-            if direction is 3: #Up
+            if direction == 3: #Up
                 self.board[self.positionXP1, self.positionYP1] = 3
                 self.positionXP1 -= 1
-            if direction is 4: #Down
+            if direction == 4: #Down
                 self.board[self.positionXP1, self.positionYP1] = 4
                 self.positionXP1 += 1
 
         if self.nplayer == 2:
-            if direction is 1: #Left
+            if direction == 1: #Left
                 self.board[self.positionXP2, self.positionYP2] = 1
                 self.positionYP2 -= 1
-            if direction is 2: #Right
+            if direction == 2: #Right
                 self.board[self.positionXP2, self.positionYP2] = 2
                 self.positionYP2 += 1
-            if direction is 3: #Up
+            if direction == 3: #Up
                 self.board[self.positionXP2, self.positionYP2] = 3
                 self.positionXP2 -= 1
-            if direction is 4: #Down
+            if direction == 4: #Down
                 self.board[self.positionXP2, self.positionYP2] = 4
                 self.positionXP2 += 1
     
@@ -293,9 +292,6 @@ def main():
     # Search algorithm of the AI player
 
     # Start the game
-    #TronGameController([Human_Player(), Human_Player()]).play()
-    #TronGameController([AI_Player(algorithm), AI_Player(SSS(18))]).play()
-
     try:
         input('Press Enter to start!')
         algorithm = Negamax(1)

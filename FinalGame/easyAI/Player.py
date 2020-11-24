@@ -36,6 +36,7 @@ class Human_Player:
 
     def __init__(self, name = 'Human', mlp = None , encoders = None):
         self.name = name
+        self.old_move = None
         if(mlp is None or encoders is None):
             print('Error initializing game. Exiting....')
             exit(-1)
@@ -79,16 +80,23 @@ class Human_Player:
                 accumPSDPower = []
                 classes = list(map(np.argmax, prediction))
                 labels = self.encoder.inverse_transform(classes)
-                move = self.moves[labels[0]]
-                if move is not None:
-                    if str(move) in possible_moves_str:
+                new_move = self.moves[labels[0]]
+                if new_move is not None:
+                    if str(new_move) in possible_moves_str:
+                        accumPSDPower = []
                         print('Label:',labels)
                         # Transform the move into its real type (integer, etc. and return).
-                        move = possible_moves[possible_moves_str.index(str(move))]
+                        move = possible_moves[possible_moves_str.index(str(new_move))]
+                        self.old_move = move
                         return move
+                    elif str(self.old_move) in possible_moves_str:
+                        print('Label:',labels, 'invalid, keeping old move')
+                        return self.old_move
                     else:
+                        print('Label:',labels)
                         print('You lose!')
                         raise FloatingPointError
+                        
 
             except socket.timeout:
                 accumPSDPower = []
